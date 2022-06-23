@@ -6,7 +6,11 @@ const UserSchema = new mongoose.Schema({
         required: true,
         unique: true,
     },
-    //cart: {}
+    //cart: {
+    //required: true,
+   // type: mongoose.Types.ObjectId,
+  //  ref: "Cart",
+    // }
     password: {
         type: String,
         required: true,
