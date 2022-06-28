@@ -2,11 +2,11 @@ import express from "express"
 const router = express.Router()
 import Product from "../models/Product.js"
 import {productCreateValidator} from "../validations/product.js";
-import {validationResult} from "express-validator";
+import { validationResult} from "express-validator";
+import checkAuth from "../utils/checkAuth.js";
 
 
-//создать Middleware для провреки селлеров
-router.post("create",productCreateValidator,async (req, res) => {
+router.post("/create",productCreateValidator, async (req, res) => {
    try {
        const err = validationResult(req)
        if (!err.isEmpty()) {
@@ -17,7 +17,7 @@ router.post("create",productCreateValidator,async (req, res) => {
            price: req.body.price,
            category: req.body.category,
            description: req.body.description,
-           seller: req.sellerId,
+           seller: req.body.seller,
            info: req.body.info,
            picture: req.body.picture,
        })
@@ -34,8 +34,7 @@ router.post("create",productCreateValidator,async (req, res) => {
 
 router.get('/',async (req,res) => {
     try {
-        //populate().exec()
-        const products = await Product.find()
+        const products = await Product.find().populate(["seller","category"]).exec()
         res.json(products)
     }
     catch (err) {
@@ -46,10 +45,10 @@ router.get('/',async (req,res) => {
     }
 })
 
-router.get(':id',async (req,res) => {
+router.get('/:id',async (req,res) => {
     try {
         const paramId = req.params.id;
-        const product = await Product.findById(paramId)
+        const product = await Product.findById(paramId).populate(["seller","category"]).exec()
         if (!product) {
             return res.status(404).json({
                 message: "Товар не найден"
@@ -65,7 +64,7 @@ router.get(':id',async (req,res) => {
     }
 })
 
-router.delete(':id',async (req,res) => {
+router.delete('/:id',checkAuth,async (req,res) => {
     try {
         const paramId = req.params.id;
         await Product.findOneAndDelete({
@@ -92,8 +91,12 @@ router.delete(':id',async (req,res) => {
     }
 })
 
-router.patch(':id',async (req,res) => {
+router.patch('/:id',checkAuth,productCreateValidator,async (req,res) => {
     try {
+        const err = validationResult(req)
+        if (!err.isEmpty()) {
+            return res.status(400).json(err.array())
+        }
         const paramId = req.params.id;
         await Product.updateOne({
             _id:paramId

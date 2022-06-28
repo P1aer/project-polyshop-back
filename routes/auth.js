@@ -53,7 +53,8 @@ router.get("/me",checkAuth,async (req,res) => {
         const user = await User.findById(req.userId)
         if (!user) {
             return res.status(404).json({
-                message:"Пользователь не найден"
+                message:"Пользователь не найден",
+                id: req.userId
             })
         }
         const {password, ...data} = user._doc
