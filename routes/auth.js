@@ -48,6 +48,44 @@ router.post("/login",async (req,res) => {
 
 })
 
+router.post("/addCart", checkAuth, async (req,res) => {
+    try {
+         await User.findOneAndUpdate({
+            _id: req.userId,
+        }, {
+            "$push": {"cart": req.body.data}
+        })
+        res.json( {
+            success: true
+        })
+    }
+    catch (err) {
+        console.log(err)
+        return res.status(500).json({
+            message: "не удалось обновить корзину"
+        })
+    }
+})
+
+router.delete("/deleteCart", checkAuth, async (req,res) => {
+    try {
+        await User.findOneAndUpdate({
+            _id: req.userId,
+        }, {
+            cart: req.body.data
+        })
+        res.json( {
+            success: true
+        })
+    }
+    catch (err) {
+        console.log(err)
+        return res.status(500).json({
+            message: "не удалось обновить корзину"
+        })
+    }
+})
+
 router.get("/me",checkAuth,async (req,res) => {
     try {
         const user = await User.findById(req.userId)

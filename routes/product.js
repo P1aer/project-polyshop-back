@@ -45,6 +45,43 @@ router.get('/',async (req,res) => {
     }
 })
 
+router.post("/search",async (req,res) => {
+    try {
+        const data = await Product.find({
+            name: { $regex: req.body.data }
+        },null, {limit:10})
+        res.json(data)
+    }
+    catch (err) {
+        console.log(err)
+        res.status(500).json({
+            message: "Не удалось получить товары"
+        })
+    }
+})
+
+router.post('/getCart',async (req,res) => {
+    try {
+        const product = await Product.find({
+            _id : {
+                $in: req.body
+            }
+        })
+        if (!product) {
+            return res.status(404).json({
+                message: "Товар не найден"
+            })
+        }
+        res.json(product)
+    }
+    catch (err) {
+        console.log(err)
+        res.status(500).json({
+            message: "Товар не удалось получить"
+        })
+    }
+})
+
 router.get('/:id',async (req,res) => {
     try {
         const paramId = req.params.id;
@@ -120,4 +157,7 @@ router.patch('/:id',checkAuth,productCreateValidator,async (req,res) => {
         })
     }
 })
+
+
+
 export default router
